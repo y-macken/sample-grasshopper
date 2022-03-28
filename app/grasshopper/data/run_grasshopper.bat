@@ -1,0 +1,1 @@
+CALL "C:\Users\VIKTOR\VIKTOR\PtBlink\worker\run_grasshopper.bat"

@@ -14,8 +14,15 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from io import BytesIO
+from pathlib import Path
 
 from viktor.core import ViktorController
+from viktor.external.generic import GenericAnalysis
+from viktor.views import DataGroup
+from viktor.views import DataItem
+from viktor.views import DataResult
+from viktor.views import DataView
 
 from .parametrization import GrasshopperParametrization
 
@@ -25,3 +32,33 @@ class GrasshopperController(ViktorController):
     label = "Grasshopper"
     parametrization = GrasshopperParametrization
     viktor_convert_entity_field = True
+
+    @DataView('Data output', duration_guess=10)
+    def visualize(self, params, **kwargs):
+        # TODO make param string
+        param_string = f""
+
+        path_to_rhino_file = Path(__file__).parent / 'data' / ''
+        path_to_gh_file = Path(__file__).parent / 'data' / 'sample_app_gh.gh'
+        path_to_rhino_programm = 'C:\\Program Files\\Rhino 7\\System\\Rhino.exe'
+
+        executable_string = f'SET rhinoFilePath="{path_to_rhino_file}" SET ghFilePath="{path_to_gh_file}"\n ' \
+                            f'"{path_to_rhino_programm}" /nosplash /runscript="-open %rhinoFilePath% ' \
+                            f'-GrasshopperPlayer {path_to_gh_file} {param_string} _save _enter exit _enter'
+
+        # Generate the input file(s)
+        files = [
+            ('run_grasshopper.bat', BytesIO(bytes(executable_string,  'utf8')))
+        ]
+
+        # Run the analysis and obtain the output file
+        generic_analysis = GenericAnalysis(files=files, executable_key="run_grasshopper",
+                                           output_filenames=["out.txt"])
+        generic_analysis.execute(timeout=60)
+        output_file = generic_analysis.get_output_file("out.txt")
+
+        # TODO Parse output data from output string
+        # construct data group
+        data_group = DataGroup()
+
+        return DataResult(data_group)
