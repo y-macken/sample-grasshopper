@@ -22,7 +22,6 @@ from viktor import Color
 from viktor.core import ViktorController
 from viktor.external.generic import GenericAnalysis
 from viktor.geometry import CircularExtrusion
-from viktor.geometry import Extrusion
 from viktor.geometry import Group
 from viktor.geometry import Line
 from viktor.geometry import Material
@@ -85,27 +84,32 @@ class GrasshopperController(ViktorController):
             geometry_group.add(CircularExtrusion(0.5, Line(point_a, point_c)))
             geometry_group.add(CircularExtrusion(0.5, Line(point_b, point_c)))
 
-        field_obj = RectangularExtrusion(field_width, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.1)))
+        self.draw_football_field(field_length, field_width, geometry_group)
+
+        return geometry_group
+
+    @staticmethod
+    def draw_football_field(field_length, field_width, geometry_group):
+        """Adds the geometries for the visualization of the football-field"""
+        field_obj = RectangularExtrusion(field_width, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.01)))
         field_obj.material = Material('grass', color=Color.green())
         geometry_group.add(field_obj)
 
-        mid_line = RectangularExtrusion(1, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.4)))
+        mid_line = RectangularExtrusion(1, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.04)))
         mid_line.material = Material('line', color=Color.white())
         geometry_group.add(mid_line)
 
-        mid_circle_obj = CircularExtrusion(14, Line(Point(0, 0, 0), Point(0, 0, 0.2)))
-        mid_circle_obj.material = Material('line', color=Color.white(), threejs_opacity=0.9)
+        mid_circle_obj = CircularExtrusion(18, Line(Point(0, 0, 0), Point(0, 0, 0.02)))
+        mid_circle_obj.material = Material('line', color=Color.white())
         geometry_group.add(mid_circle_obj)
 
-        mid_circle_inside_obj = CircularExtrusion(12, Line(Point(0, 0, 0), Point(0, 0, 0.3)))
-        mid_circle_inside_obj.material = Material('grass', color=Color.green(), threejs_opacity=1)
+        mid_circle_inside_obj = CircularExtrusion(16, Line(Point(0, 0, 0), Point(0, 0, 0.03)))
+        mid_circle_inside_obj.material = Material('grass', color=Color.green())
         geometry_group.add(mid_circle_inside_obj)
 
-        mid_point_obj = CircularExtrusion(1.5, Line(Point(0, 0, 0), Point(0, 0, 0.4)))
-        mid_point_obj.material = Material('line', color=Color.white(), threejs_opacity=0.9)
+        mid_point_obj = CircularExtrusion(1.5, Line(Point(0, 0, 0), Point(0, 0, 0.04)))
+        mid_point_obj.material = Material('line', color=Color.white())
         geometry_group.add(mid_point_obj)
-
-        return geometry_group
 
     @staticmethod
     def parse_triangle_string(triangle_string):
