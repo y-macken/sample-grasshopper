@@ -18,13 +18,16 @@ from io import BytesIO
 from io import TextIOWrapper
 from pathlib import Path
 
+from viktor import Color
 from viktor.core import ViktorController
 from viktor.external.generic import GenericAnalysis
 from viktor.geometry import CircularExtrusion
+from viktor.geometry import Extrusion
 from viktor.geometry import Group
 from viktor.geometry import Line
+from viktor.geometry import Material
 from viktor.geometry import Point
-from viktor.geometry import Sphere
+from viktor.geometry import RectangularExtrusion
 from viktor.views import DataGroup
 from viktor.views import DataItem
 from viktor.views import GeometryAndDataResult
@@ -63,21 +66,45 @@ class GrasshopperController(ViktorController):
         wrapper = TextIOWrapper(grass_hopper_data_bytes, encoding='utf-8')
         grass_hopper_data = wrapper.read().splitlines()
 
+        amount_of_seats = grass_hopper_data[0]
+        field_width = float(grass_hopper_data[1]) * 2
+        field_length = float(grass_hopper_data[2]) * 2
+        triangle_strings = grass_hopper_data[3:]
+
         # Create results for view
-        seats_amount = DataGroup(DataItem("Number of seats", grass_hopper_data[0]))
-        geometry_group = self.generate_geometry_group_from_triangles(grass_hopper_data[1:])
-        # geometry_group = Group([])
-        # geometry_group.add(Sphere(Point(0, 0, 0), 1))
+        seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats))
+        geometry_group = self.generate_geometry_group_from_triangles(field_length, field_width, triangle_strings)
         return GeometryAndDataResult(geometry_group, seats_amount)
 
-    def generate_geometry_group_from_triangles(self, triangle_strings):
+    def generate_geometry_group_from_triangles(self, field_length, field_width, triangle_strings):
         """Parses a line of 3 points to 3 circular beams to form a triangle"""
         geometry_group = Group([])
         for triangle_string in triangle_strings:
             point_a, point_b, point_c = self.parse_triangle_string(triangle_string)
-            geometry_group.add(CircularExtrusion(1, Line(point_a, point_b)))
-            geometry_group.add(CircularExtrusion(1, Line(point_a, point_c)))
-            geometry_group.add(CircularExtrusion(1, Line(point_b, point_c)))
+            geometry_group.add(CircularExtrusion(0.5, Line(point_a, point_b)))
+            geometry_group.add(CircularExtrusion(0.5, Line(point_a, point_c)))
+            geometry_group.add(CircularExtrusion(0.5, Line(point_b, point_c)))
+
+        field_obj = RectangularExtrusion(field_width, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.1)))
+        field_obj.material = Material('grass', color=Color.green())
+        geometry_group.add(field_obj)
+
+        mid_line = RectangularExtrusion(1, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.4)))
+        mid_line.material = Material('line', color=Color.white())
+        geometry_group.add(mid_line)
+
+        mid_circle_obj = CircularExtrusion(14, Line(Point(0, 0, 0), Point(0, 0, 0.2)))
+        mid_circle_obj.material = Material('line', color=Color.white(), threejs_opacity=0.9)
+        geometry_group.add(mid_circle_obj)
+
+        mid_circle_inside_obj = CircularExtrusion(12, Line(Point(0, 0, 0), Point(0, 0, 0.3)))
+        mid_circle_inside_obj.material = Material('grass', color=Color.green(), threejs_opacity=1)
+        geometry_group.add(mid_circle_inside_obj)
+
+        mid_point_obj = CircularExtrusion(1.5, Line(Point(0, 0, 0), Point(0, 0, 0.4)))
+        mid_point_obj.material = Material('line', color=Color.white(), threejs_opacity=0.9)
+        geometry_group.add(mid_point_obj)
+
         return geometry_group
 
     @staticmethod
