@@ -35,30 +35,30 @@ class GrasshopperController(ViktorController):
 
     @DataView('Data output', duration_guess=10)
     def visualize(self, params, **kwargs):
-        # TODO make param string
-        param_string = f""
+        exec_string = '"C:\\Program Files\\Rhino 7\\System\\Rhino.exe" /nosplash /runscript=" -open sample_app.3dm ' \
+                      '-Grasshopper _Document _Open sample_app_gh.gh _save _enter exit _enter"\nexit'
 
-        path_to_rhino_file = Path(__file__).parent / 'data' / ''
-        path_to_gh_file = Path(__file__).parent / 'data' / 'sample_app_gh.gh'
-        path_to_rhino_programm = 'C:\\Program Files\\Rhino 7\\System\\Rhino.exe'
+        with open(Path(__file__).parent / 'data' / 'sample_app.3dm', 'rb') as rhino_file:
+            rhino_file_buffer = BytesIO(rhino_file.read())
 
-        executable_string = f'SET rhinoFilePath="{path_to_rhino_file}" SET ghFilePath="{path_to_gh_file}"\n ' \
-                            f'"{path_to_rhino_programm}" /nosplash /runscript="-open %rhinoFilePath% ' \
-                            f'-GrasshopperPlayer {path_to_gh_file} {param_string} _save _enter exit _enter'
+        with open(Path(__file__).parent / 'data' / 'sample_app_gh.gh', 'rb') as grasshopper_file:
+            grasshopper_file_buffer = BytesIO(grasshopper_file.read())
 
-        # Generate the input file(s)
         files = [
-            ('run_grasshopper.bat', BytesIO(bytes(executable_string,  'utf8')))
+            ('input.txt', BytesIO(bytes('70, 4, 16, 1.5, 20, 20, 40', 'utf8'))),
+            # ('run_grassHopper.bat', BytesIO(bytes(exec_string, 'utf8'))),
+            ('sample_app.3dm', rhino_file_buffer),
+            ('sample_app_gh.gh', grasshopper_file_buffer)
         ]
 
         # Run the analysis and obtain the output file
         generic_analysis = GenericAnalysis(files=files, executable_key="run_grasshopper",
-                                           output_filenames=["out.txt"])
+                                           output_filenames=["output.txt"])
         generic_analysis.execute(timeout=60)
-        output_file = generic_analysis.get_output_file("out.txt")
+        output_file = generic_analysis.get_output_file("output.txt")
 
         # TODO Parse output data from output string
         # construct data group
-        data_group = DataGroup()
+        data_group = DataGroup(DataItem('test', True))
 
         return DataResult(data_group)

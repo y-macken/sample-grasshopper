@@ -21,5 +21,5 @@ from viktor.parametrization import Step
 
 class GrasshopperParametrization(Parametrization):
     """Defines the input fields in left-side of the web UI in the Grasshopper entity (Editor)."""
-    input = Step("Input stadium")
+    input = Step("Input stadium", views='visualize')
     input.height = NumberField("height", name="height", suffix="m", default=20)
