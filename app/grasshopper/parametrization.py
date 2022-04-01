@@ -14,12 +14,18 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from viktor.parametrization import HiddenField
 from viktor.parametrization import NumberField
 from viktor.parametrization import Parametrization
 from viktor.parametrization import Step
 
-
 class GrasshopperParametrization(Parametrization):
     """Defines the input fields in left-side of the web UI in the Grasshopper entity (Editor)."""
-    input = Step("Input stadium", views='visualize')
-    input.height = NumberField("height", name="height", suffix="m", default=20)
+    input = Step("visualization stadium", views='visualize')
+    input.pitch_width = NumberField("Pitch width", suffix="m", default=70)
+    input.Offset = NumberField("Offset from pitch", suffix="m", default=4)
+    input.Shape = NumberField("Shape", suffix="m", default=16)
+    input.Depth = NumberField("Depth factor", default=1.5)
+    input.Asymmetry_length = NumberField("Asymmetry along length", default=20)
+    input.Asymmetry_width = NumberField("Asymmetry along width", default=20)
+    input.Height = NumberField("Height", suffix="m", default=40)
