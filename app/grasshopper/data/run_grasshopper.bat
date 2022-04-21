@@ -1,2 +1,2 @@
-"C:\Program Files\Rhino 7\System\Rhino.exe" /nosplash /runscript=" -open sample_app.3dm -Grasshopper _Document _Open sample_app_gh.gh _save _enter exit _enter"
+"C:\Program Files\Rhino 7\System\Rhino.exe" /nosplash /runscript="-_SetWorkingFolder ""%cd%"" -open sample_app.3dm -Grasshopper _Document _Open sample_app_gh.gh _enter -_export _SelAll _enter output.obj _enter _enter _enter _SelAll _Delete _save _enter _exit _enter"
 exit

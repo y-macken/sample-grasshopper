@@ -18,7 +18,13 @@ from io import BytesIO
 from io import TextIOWrapper
 from pathlib import Path
 
+from trimesh import load
+from trimesh.exchange.gltf import export_glb
 from viktor import Color
+from viktor import File
+from viktor import UserException
+from viktor._vendor.trimesh.resolvers import FilePathResolver
+from viktor.core import Storage
 from viktor.core import ViktorController
 from viktor.external.generic import GenericAnalysis
 from viktor.geometry import CircularExtrusion
@@ -27,6 +33,7 @@ from viktor.geometry import Line
 from viktor.geometry import Material
 from viktor.geometry import Point
 from viktor.geometry import RectangularExtrusion
+from viktor.result import DownloadResult
 from viktor.views import DataGroup
 from viktor.views import DataItem
 from viktor.views import GeometryAndDataResult
@@ -41,7 +48,7 @@ class GrasshopperController(ViktorController):
     parametrization = GrasshopperParametrization
     viktor_convert_entity_field = True
 
-    @GeometryAndDataView('3D model', duration_guess=10)
+    @GeometryAndDataView('3D model', duration_guess=10, up_axis='Y')
     def visualize(self, params, **kwargs):
         """Visualizes the 3d model of the grasshopper design and displays the data returned from it."""
         # Create all files needed to send to the worker
@@ -59,63 +66,43 @@ class GrasshopperController(ViktorController):
 
         # Run the analysis and obtain the output file
         generic_analysis = GenericAnalysis(files=files, executable_key="run_grasshopper",
-                                           output_filenames=["output.txt"])
-        generic_analysis.execute(timeout=60)
+                                           output_filenames=["output.txt", "output.obj", "output.mtl"])
+        generic_analysis.execute(timeout=300)
         grass_hopper_data_bytes = generic_analysis.get_output_file("output.txt")
+        object_file = generic_analysis.get_output_file("output.obj")
+        material_file = generic_analysis.get_output_file("output.mtl")
         wrapper = TextIOWrapper(grass_hopper_data_bytes, encoding='utf-8')
         grass_hopper_data = wrapper.read().splitlines()
 
         amount_of_seats = grass_hopper_data[0]
-        field_width = float(grass_hopper_data[1]) * 2
-        field_length = float(grass_hopper_data[2]) * 2
-        triangle_strings = grass_hopper_data[3:]
+        field_length = float(grass_hopper_data[1]) * 2
+        field_width = float(grass_hopper_data[2]) * 2
 
-        # Create results for view
-        seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats))
-        geometry_group = self.generate_geometry_group_from_triangles(field_length, field_width, triangle_strings)
-        return GeometryAndDataResult(geometry_group, seats_amount)
+        # convert obj bytes to glb file
+        resolver = FilePathResolver(str(Path(__file__).parent))
+        resolver.write("output.mtl", TextIOWrapper(material_file).read())
+        trimesh_scene = load(object_file, resolver=resolver, file_type="obj")
+        geometry = File()  # create a writable file
+        with geometry.open_binary() as w:
+            w.write(export_glb(trimesh_scene))
 
-    def generate_geometry_group_from_triangles(self, field_length, field_width, triangle_strings):
-        """Parses a line of 3 points to 3 circular beams to form a triangle"""
-        geometry_group = Group([])
-        for triangle_string in triangle_strings:
-            point_a, point_b, point_c = self.parse_triangle_string(triangle_string)
-            geometry_group.add(CircularExtrusion(0.5, Line(point_a, point_b)))
-            geometry_group.add(CircularExtrusion(0.5, Line(point_a, point_c)))
-            geometry_group.add(CircularExtrusion(0.5, Line(point_b, point_c)))
+        # # Create results for dataview
+        seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats),
+                                 DataItem("Field width", field_width),
+                                 DataItem("Field length", field_length))
 
-        self.draw_football_field(field_length, field_width, geometry_group)
+        # store glb file in storage
+        storage = Storage()
+        storage.set('glb_file', data=geometry, scope='workspace')
 
-        return geometry_group
+        return GeometryAndDataResult(geometry, seats_amount)
 
-    @staticmethod
-    def draw_football_field(field_length, field_width, geometry_group):
-        """Adds the geometries for the visualization of the football-field"""
-        field_obj = RectangularExtrusion(field_width, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.01)))
-        field_obj.material = Material('grass', color=Color.green())
-        geometry_group.add(field_obj)
+    def download_glb_output(self, params, **kwargs):
+        """"Download glb file"""
+        try:
+            storage = Storage()
+            glb_file = storage.get('glb_file', scope='workspace')
+        except FileNotFoundError:
+            raise UserException("First update your view")
 
-        mid_line = RectangularExtrusion(1, field_length, Line(Point(0, 0, 0), Point(0, 0, 0.04)))
-        mid_line.material = Material('line', color=Color.white())
-        geometry_group.add(mid_line)
-
-        mid_circle_obj = CircularExtrusion(18, Line(Point(0, 0, 0), Point(0, 0, 0.02)))
-        mid_circle_obj.material = Material('line', color=Color.white())
-        geometry_group.add(mid_circle_obj)
-
-        mid_circle_inside_obj = CircularExtrusion(16, Line(Point(0, 0, 0), Point(0, 0, 0.03)))
-        mid_circle_inside_obj.material = Material('grass', color=Color.green())
-        geometry_group.add(mid_circle_inside_obj)
-
-        mid_point_obj = CircularExtrusion(1.5, Line(Point(0, 0, 0), Point(0, 0, 0.04)))
-        mid_point_obj.material = Material('line', color=Color.white())
-        geometry_group.add(mid_point_obj)
-
-    @staticmethod
-    def parse_triangle_string(triangle_string):
-        """Parses a string like "{0, 0, 0},{1, 1, 1},{2, 2, 2}" to 3 points."""
-        points = []
-        for point_str in triangle_string[1:-1].split("},{"):
-            coordinates = [float(coordinate_str) for coordinate_str in point_str.split(',')]
-            points.append(Point(coordinates[0], coordinates[1], coordinates[2]))
-        return points[0], points[1], points[2]
+        return DownloadResult(glb_file, 'viktor.glb')

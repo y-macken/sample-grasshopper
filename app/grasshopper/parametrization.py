@@ -14,6 +14,8 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from viktor.parametrization import DownloadButton
+from viktor.parametrization import LineBreak
 from viktor.parametrization import NumberField
 from viktor.parametrization import Page
 from viktor.parametrization import Parametrization
@@ -29,3 +31,5 @@ class GrasshopperParametrization(Parametrization):
     input.Asymmetry_length = NumberField("Asymmetry along length", default=20)
     input.Asymmetry_width = NumberField("Asymmetry along width", default=20)
     input.Height = NumberField("Height", suffix="m", default=40)
+    input.bl = LineBreak()
+    input.gbl_file = DownloadButton('download glb file', method='download_glb_output')
