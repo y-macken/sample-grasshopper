@@ -26,6 +26,7 @@ from viktor import UserException
 from viktor._vendor.trimesh.resolvers import FilePathResolver
 from viktor.core import Storage
 from viktor.core import ViktorController
+from viktor.core import progress_message
 from viktor.external.generic import GenericAnalysis
 from viktor.geometry import CircularExtrusion
 from viktor.geometry import Group
@@ -64,10 +65,13 @@ class GrasshopperController(ViktorController):
             ('sample_app_gh.gh', grasshopper_file_buffer)
         ]
 
+        progress_message(message='1/3 - Opening Rhino and grasshopper to export the obj file (±3 min)')
+
         # Run the analysis and obtain the output file
         generic_analysis = GenericAnalysis(files=files, executable_key="run_grasshopper",
                                            output_filenames=["output.txt", "output.obj", "output.mtl"])
         generic_analysis.execute(timeout=300)
+
         grass_hopper_data_bytes = generic_analysis.get_output_file("output.txt")
         object_file = generic_analysis.get_output_file("output.obj")
         material_file = generic_analysis.get_output_file("output.mtl")
@@ -77,6 +81,8 @@ class GrasshopperController(ViktorController):
         amount_of_seats = grass_hopper_data[0]
         field_length = float(grass_hopper_data[1]) * 2
         field_width = float(grass_hopper_data[2]) * 2
+
+        progress_message(message='2/3 - Convert obj bytes to glb file (±2 min)')
 
         # convert obj bytes to glb file
         resolver = FilePathResolver(str(Path(__file__).parent))
@@ -90,6 +96,8 @@ class GrasshopperController(ViktorController):
         seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats),
                                  DataItem("Field width", field_width),
                                  DataItem("Field length", field_length))
+
+        progress_message(message='3/3 - Store gbl file in memory (±1 min)')
 
         # store glb file in storage
         storage = Storage()

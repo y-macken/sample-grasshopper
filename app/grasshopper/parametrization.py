@@ -19,11 +19,16 @@ from viktor.parametrization import LineBreak
 from viktor.parametrization import NumberField
 from viktor.parametrization import Page
 from viktor.parametrization import Parametrization
+from viktor.parametrization import Text
 
 
 class GrasshopperParametrization(Parametrization):
     """Defines the input fields in left-side of the web UI in the Grasshopper entity (Editor)."""
     input = Page("visualization stadium", views='visualize')
+    input.txt = Text('### This VIKTOR app is an integration with grasshopper. \nWith grasshopper it creates a '
+                     'football stadium. This is then exported as an obj file in rhino and in viktor visualised. It can '
+                     'also compute the length of the field and how many seats the stadium can have. Below you can '
+                     'define all the parameters and in the right bottom you can update the visualization')
     input.pitch_width = NumberField("Pitch width", suffix="m", default=70)
     input.Offset = NumberField("Offset from pitch", suffix="m", default=4)
     input.Shape = NumberField("Shape", suffix="m", default=16)
