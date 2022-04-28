@@ -19,22 +19,24 @@ from viktor.parametrization import LineBreak
 from viktor.parametrization import NumberField
 from viktor.parametrization import Page
 from viktor.parametrization import Parametrization
+from viktor.parametrization import Section
 from viktor.parametrization import Text
 
 
 class GrasshopperParametrization(Parametrization):
     """Defines the input fields in left-side of the web UI in the Grasshopper entity (Editor)."""
-    input = Page("visualization stadium", views='visualize')
-    input.txt = Text('### This VIKTOR app is an integration with grasshopper. \nWith grasshopper it creates a '
+
+    grasshopper = Section('grasshopper parameters')
+    grasshopper.txt = Text('### This VIKTOR app is an integration with grasshopper. \nWith grasshopper it creates a '
                      'football stadium. This is then exported as an obj file in rhino and in viktor visualised. It can '
                      'also compute the length of the field and how many seats the stadium can have. Below you can '
                      'define all the parameters and in the right bottom you can update the visualization')
-    input.pitch_width = NumberField("Pitch width", suffix="m", default=70)
-    input.Offset = NumberField("Offset from pitch", suffix="m", default=4)
-    input.Shape = NumberField("Shape", suffix="m", default=16)
-    input.Depth = NumberField("Depth factor", default=1.5, step=0.1)
-    input.Asymmetry_length = NumberField("Asymmetry along length", default=20)
-    input.Asymmetry_width = NumberField("Asymmetry along width", default=20)
-    input.Height = NumberField("Height", suffix="m", default=40)
-    input.bl = LineBreak()
-    input.gbl_file = DownloadButton('download glb file', method='download_glb_output')
+    grasshopper.pitch_width = NumberField("Pitch width", suffix="m", default=70)
+    grasshopper.Offset = NumberField("Offset from pitch", suffix="m", default=4)
+    grasshopper.Shape = NumberField("Shape", suffix="m", default=16)
+    grasshopper.Depth = NumberField("Depth factor", default=1.5, step=0.1)
+    grasshopper.Asymmetry_length = NumberField("Asymmetry along length", default=20)
+    grasshopper.Asymmetry_width = NumberField("Asymmetry along width", default=20)
+    grasshopper.Height = NumberField("Height", suffix="m", default=40)
+    download = Section('Downloads')
+    download.gbl_file = DownloadButton('download glb file', method='download_glb_output')

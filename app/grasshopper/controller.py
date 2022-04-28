@@ -20,20 +20,13 @@ from pathlib import Path
 
 from trimesh import load
 from trimesh.exchange.gltf import export_glb
-from viktor import Color
+from trimesh.resolvers import FilePathResolver
 from viktor import File
 from viktor import UserException
-from viktor._vendor.trimesh.resolvers import FilePathResolver
 from viktor.core import Storage
 from viktor.core import ViktorController
 from viktor.core import progress_message
 from viktor.external.generic import GenericAnalysis
-from viktor.geometry import CircularExtrusion
-from viktor.geometry import Group
-from viktor.geometry import Line
-from viktor.geometry import Material
-from viktor.geometry import Point
-from viktor.geometry import RectangularExtrusion
 from viktor.result import DownloadResult
 from viktor.views import DataGroup
 from viktor.views import DataItem
@@ -52,13 +45,15 @@ class GrasshopperController(ViktorController):
     @GeometryAndDataView('3D model', duration_guess=10, up_axis='Y')
     def visualize(self, params, **kwargs):
         """Visualizes the 3d model of the grasshopper design and displays the data returned from it."""
-        # Create all files needed to send to the worker
+        # Create all files needed to send to the worker. This is the Rhino file, the Grasshopper file,
+        # and the input parameters as a txt file
         with open(Path(__file__).parent / 'data' / 'sample_app.3dm', 'rb') as rhino_file:
             rhino_file_buffer = BytesIO(rhino_file.read())
         with open(Path(__file__).parent / 'data' / 'sample_app_gh.gh', 'rb') as grasshopper_file:
             grasshopper_file_buffer = BytesIO(grasshopper_file.read())
-        input_str = f'{params.input.pitch_width}, {params.input.Offset}, {params.input.Shape}, {params.input.Depth}, ' \
-                    f'{params.input.Asymmetry_length}, {params.input.Asymmetry_width}, {params.input.Height}'
+        input_str = f'{params.grasshopper.pitch_width}, {params.grasshopper.Offset}, {params.grasshopper.Shape}, ' \
+                    f'{params.grasshopper.Depth}, {params.grasshopper.Asymmetry_length}, ' \
+                    f'{params.grasshopper.Asymmetry_width}, {params.grasshopper.Height}'
         files = [
             ('input.txt', BytesIO(bytes(input_str, 'utf8'))),
             ('sample_app.3dm', rhino_file_buffer),
@@ -72,9 +67,12 @@ class GrasshopperController(ViktorController):
                                            output_filenames=["output.txt", "output.obj", "output.mtl"])
         generic_analysis.execute(timeout=300)
 
+        # Retrieve all files from the analysis
         grass_hopper_data_bytes = generic_analysis.get_output_file("output.txt")
         object_file = generic_analysis.get_output_file("output.obj")
         material_file = generic_analysis.get_output_file("output.mtl")
+
+        # Parse output.txt to an array (split by lines)
         wrapper = TextIOWrapper(grass_hopper_data_bytes, encoding='utf-8')
         grass_hopper_data = wrapper.read().splitlines()
 
@@ -92,7 +90,7 @@ class GrasshopperController(ViktorController):
         with geometry.open_binary() as w:
             w.write(export_glb(trimesh_scene))
 
-        # # Create results for dataview
+        # Create results for dataview
         seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats),
                                  DataItem("Field width", field_width),
                                  DataItem("Field length", field_length))
