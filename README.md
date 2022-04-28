@@ -10,7 +10,7 @@ You can then also download the model as a gtb file
 When using this app with VIKTOR there are a few steps required to make this app work.
 1. Make sure you have Rhino installed at ``C:\Program Files\Rhino 7\System\Rhino.exe``
 2. Install a generic worker found on https://docs.viktor.ai/docs/worker. Make sure you select ``generic``
-3. Replace the confic.yaml file in yor worker folder with the file found at [app/grasshopper/data/config.yaml](app/grasshopper/data/config.yaml)
+3. Replace the config.yaml file in yor worker folder with the file found at [app/grasshopper/data/config.yaml](app/grasshopper/data/config.yaml)
 4. Copy the file found at [app/grasshopper/data/run_grasshopper.bat](app/grasshopper/data/run_grasshopper.bat) in the same worker folder.
 
 **Apply for a [demo account](https://www.viktor.ai/demo-environment) to get access to this and all other VIKTOR sample applications.**
