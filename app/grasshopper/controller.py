@@ -87,8 +87,8 @@ class GrasshopperController(ViktorController):
         resolver.write("output.mtl", TextIOWrapper(material_file).read())
         trimesh_scene = load(object_file, resolver=resolver, file_type="obj")
         geometry = File()  # create a writable file
-        with geometry.open_binary() as w:
-            w.write(export_glb(trimesh_scene))
+        with geometry.open_binary() as writable_buffer:
+            writable_buffer.write(export_glb(trimesh_scene))
 
         # Create results for dataview
         seats_amount = DataGroup(DataItem("Number of seats", amount_of_seats),
@@ -108,7 +108,7 @@ class GrasshopperController(ViktorController):
         try:
             storage = Storage()
             glb_file = storage.get('glb_file', scope='workspace')
-        except FileNotFoundError:
-            raise UserException("First update your view")
+        except FileNotFoundError as err:
+            raise UserException("First update your view") from err
 
         return DownloadResult(glb_file, 'viktor.glb')
