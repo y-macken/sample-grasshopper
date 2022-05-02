@@ -62,7 +62,7 @@ class GrasshopperController(ViktorController):
 
         progress_message(message='1/3 - Opening Rhino and grasshopper to export the obj file (±3 min)')
 
-        # Run the analysis and obtain the output file
+        # Run the analysis on grasshopper
         generic_analysis = GenericAnalysis(files=files, executable_key="run_grasshopper",
                                            output_filenames=["output.txt", "output.obj", "output.mtl"])
         generic_analysis.execute(timeout=300)
