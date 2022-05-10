@@ -11,5 +11,5 @@ executables:
   run_grasshopper:
     path: 'C:\Program Files\Viktor\Viktor worker for generic v5.1.1\run_grasshopper.bat'
     arguments:
-    workingDirectoryPath: 'C:\Program Files\Viktor\Viktor worker for generic v5.1.1'
+    workingDirectoryPath: ''
 maxParallelProcesses: 1 # must be one, please do not change
