@@ -8,11 +8,12 @@ You can then also download the model as a gtb file
 
 ## Setting up:
 When using this app with VIKTOR there are a few steps required to make this app work.
-1. Make sure you have Rhino installed at ``C:\Program Files\Rhino 7\System\Rhino.exe`` or change the path in [app/grasshopper/data/run_grasshopper.bat](app/grasshopper/data/run_grasshopper.bat)
+1. Make sure you have installed Rhino. In the example Rhino is installed at ``C:\Program Files\Rhino 7\System\Rhino.exe``, if your Rhino is installed somewhere else replace the path in [app/grasshopper/data/run_grasshopper.bat](app/grasshopper/data/run_grasshopper.bat).
 2. Install a generic worker found on https://docs.viktor.ai/docs/worker. Make sure you select ``generic``
-3. Copy the file found at [app/grasshopper/data/run_grasshopper.bat](app/grasshopper/data/run_grasshopper.bat) in the same worker folder.
+3. Copy the file found at [app/grasshopper/data/run_grasshopper.bat](app/grasshopper/data/run_grasshopper.bat) in the same folder where you just installed your worker. (probably at ``C:\Program Files\<username>\Viktor worker for generic v5.1.1\``)
 4. Replace the config.yaml file in your worker folder with the file found at [app/grasshopper/data/config.yaml](app/grasshopper/data/config.yaml)
-5. Execute the ``viktor-worker-generic.exe`` file with admin rights
+5. Inside the config.yaml file, replace ``    path: 'C:\Program Files\Viktor\Viktor worker for generic v5.1.1\run_grasshopper.bat'`` with the correct path top your run_grasshopper.bat file
+6. Execute the ``viktor-worker-generic.exe`` file with admin rights
 
 **Apply for a [demo account](https://www.viktor.ai/demo-environment) to get access to this and all other VIKTOR sample applications.**
 
